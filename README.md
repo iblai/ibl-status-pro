@@ -1,138 +1,217 @@
-<div align="center" width="100%">
-    <img src="./assets/android-chrome-192x192.png" width="128" alt="" />
+<div align="center">
+  <h1>StatusWatch</h1>
+  <p>A modern, FastAPI-powered status page with unified monitoring capabilities</p>
 </div>
-
-# TinyStatus
-TinyStatus is a simple, customizable status page generator that allows you to monitor the status of various services and display them on a clean, responsive web page.
-
-Check out an online demo https://status.harry.id
-
-| Light Mode | Dark Mode | 
-|-|-|
-| ![Light](https://github.com/user-attachments/assets/3ea7b55e-397f-4f7c-8189-64b74a03594b) | ![Dark](https://github.com/user-attachments/assets/92072f9e-1031-4f07-8392-1111df57453a) |
-
 
 ## Features
 
-- Monitor HTTP endpoints, ping hosts, and check open ports
-- Responsive design for both status page and history page
-- Customizable service checks via YAML configuration
-- Incident history tracking
-- Automatic status updates at configurable intervals
-- Supports both light and dark themes
-- Supports grouping
-- Cards clickable (optional)
+- 🚀 Async monitoring with FastAPI
+- 🔒 Authentication and API token support
+- 📊 Unified monitoring system
+- 🔍 Multiple check types (HTTP, Ping, Port)
+- 📈 Time-series history tracking
+- 🌐 RESTful API endpoints
+- 📱 Responsive web interface
+- 🔄 Real-time status updates
+- 📊 Uptime calculations
+- 🎯 Service grouping
+- ⚡ Performance optimizations
+- 🌓 Dark mode support
 
-## Prerequisites
+## Quick Start
 
-- Python 3.11 or higher
-- pip (Python package manager)
+### Installation
 
-## Installation
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/statuswatch.git
+cd statuswatch
+```
 
-1. Clone the repository or download the source code:
-   ```
-   git clone https://github.com/harsxv/tinystatus.git
-   cd tinystatus
-   ```
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-2. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+3. Configure your environment:
+```env
+MONITOR_CONTINUOUSLY=True
+CHECK_INTERVAL=30
+MAX_HISTORY_ENTRIES=100
+LOG_LEVEL=INFO
+PRIMARY_DATABASE_URL=sqlite:///status_history.db
+AUTH_ENABLED=True
+```
 
-## Configuration
+4. Initialize the database and create an admin user:
+```bash
+python manage.py initdb
+python manage.py auth setup
+```
 
-1. Create a `.env` file in the project root and customize the variables:
-   ```
-   MONITOR_CONTINOUSLY=True
-   CHECK_INTERVAL=30
-   MAX_HISTORY_ENTRIES=100
-   LOG_LEVEL=INFO
-   CHECKS_FILE=checks.yaml
-   INCIDENTS_FILE=incidents.md
-   TEMPLATE_FILE=index.html.theme
-   HISTORY_TEMPLATE_FILE=history.html.theme
-   STATUS_HISTORY_FILE=history.json
-   HTML_OUTPUT_DIRECTORY=/var/www/htdocs/status/
-   ```
+## Authentication
 
-2. Edit the `checks.yaml` file to add or modify the services you want to monitor.
-   Example:
-   ```yaml
-    - title: 'Group 1'
-      checks:
-        - name: GitHub Home
-          type: http
-          host: https://github.com
-          url: https://docs.github.com/en
-          expected_code: 200
+StatusWatch supports two types of authentication:
+- Basic Authentication for web interface
+- Token Authentication for API access
 
-        - name: Google Public DNS
-          type: ping
-          host: 8.8.8.8
+### Managing Authentication
 
-        - name: Dummy MySQL Database
-          type: port
-          host: db.example.com
-          port: 3306
+Enable/disable authentication:
+```bash
+# Show current auth status
+python manage.py auth status
 
-       - name: Home Server with Self-Signed Certs
-          type: http
-          host: https://homeserver.local
-          ssc: True
-          expected_code: 200
-   ```
+# Enable authentication
+python manage.py auth enable
 
-3. (Optional) Customize the `incidents.md` file to add any known incidents or maintenance schedules.
+# Disable authentication
+python manage.py auth disable
 
-4. (Optional) Modify the `index.html.theme` and `history.html.theme` files to customize the look and feel of your status pages.
+# Interactive setup
+python manage.py auth setup
+```
 
-## Usage
+### User Management
 
-1. Run the TinyStatus script:
-   ```
-   python tinystatus.py
-   ```
+Create and manage users:
+```bash
+# Create a new user
+python manage.py createuser
 
-2. The script will generate three files:
-   - `index.html`: The main status page
-   - `history.html`: The status history page
-   - `history.json`: The status history and timestamp data
+# Create API token
+python manage.py token create username --expires 30
 
-3. To keep the status page continuously updated, you can run the script in the background:
-   - On Unix-like systems (Linux, macOS):
-     ```
-     nohup python tinystatus.py &
-     ```
-   - On Windows, you can use the Task Scheduler to run the script at startup.
+# Revoke token
+python manage.py token revoke username
 
-4. Serve the generated HTML files using your preferred web server (e.g., Apache, NGINX, or a simple Python HTTP server for testing).
+# Show token info
+python manage.py token info username
 
-## Using Docker
+# List all users and tokens
+python manage.py token list
+```
 
-In order to run the script using Docker:
+### API Authentication
 
-   ```
-    docker build -t tinystatus .
-    docker run -ti --rm --name tinystatus -v "$PWD":/usr/src/myapp -w /usr/src/myapp tinystatus
-   ```
+Use Bearer token authentication for API requests:
+```bash
+curl -H "Authorization: Bearer your-api-token" http://localhost:8000/api/status
+```
 
-## Customization
+### Web Authentication
 
-- Adjust the configuration variables in the `.env` file to customize the behavior of TinyStatus.
-- Customize the appearance of the status page by editing the CSS in `index.html.theme` and `history.html.theme`.
-- Add or remove services by modifying the `checks.yaml` file.
+Use Basic authentication for web interface:
+```bash
+curl -u username:password http://localhost:8000/
+```
 
-## Porting TinyStatus
+## API Endpoints
 
-TinyStatus porting are available in:
-- Go: https://github.com/annihilatorrrr/gotinystatus
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/status` | GET | Token | Current status of all services |
+| `/api/history` | GET | Token | Historical data for all services |
+| `/api/history/{group_name}` | GET | Token | Historical data for a group |
+| `/health` | GET | None | Service health check |
 
-## Contributing
+## Management Commands
 
-[Contributions](https://github.com/harsxv/tinystatus/contribute) are, of course, most welcome!
+### Database Management
+```bash
+# Initialize database
+python manage.py initdb
+
+# Reset database
+python manage.py resetdb
+
+# Backup data
+python manage.py backup data.json
+
+# Restore from backup
+python manage.py restore data.json
+```
+
+### Token Management
+```bash
+# Create token with 30-day expiry
+python manage.py token create username --expires 30
+
+# Create permanent token
+python manage.py token create username
+
+# List all tokens
+python manage.py token list
+
+# Show token details
+python manage.py token info username
+
+# Revoke token
+python manage.py token revoke username
+```
+
+### Configuration Management
+```bash
+# Validate configuration
+python manage.py checkconfig
+
+# Start interactive shell
+python manage.py shell
+```
+
+## Service Configuration
+
+Configure services in `checks.yaml`:
+```yaml
+- title: 'Infrastructure'
+  checks:
+    - name: Main Website
+      type: http
+      host: https://example.com
+      expected_code: 200
+
+    - name: Database
+      type: port
+      host: db.example.com
+      port: 5432
+```
+
+## Docker Support
+
+Run with Docker:
+```bash
+docker-compose up -d
+```
+
+Environment variables can be configured in `docker-compose.yml` or `.env` file.
+
+## Development
+
+### Project Structure
+```
+statuswatch/
+├── app/
+│   ├── main.py           # FastAPI application
+│   ├── config.py         # Configuration
+│   ├── database.py       # Database models
+│   ├── auth.py          # Authentication
+│   └── services/
+│       ├── monitor.py    # Monitoring logic
+│       └── checks.py     # Check implementations
+├── manage.py            # CLI management
+├── checks.yaml          # Service configuration
+└── incidents.md         # Incident reports
+```
+
+### Running Tests
+```bash
+pytest tests/
+```
+
+## Browser Support
+- Chrome/Edge (latest)
+- Firefox (latest)
+- Safari (latest)
 
 ## License
-
-This project is open source and available under the [MIT License](LICENSE).
+MIT License - see [LICENSE](LICENSE) for details

@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  statuswatch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: statuswatch
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8000}:8000"
+    volumes:
+      - ./data:/app/data
+      - ./checks.yaml:/app/checks.yaml:ro
+      - ./incidents.md:/app/incidents.md
+    environment:
+      - MONITOR_CONTINUOUSLY=${MONITOR_CONTINUOUSLY:-true}
+      - CHECK_INTERVAL=${CHECK_INTERVAL:-30}
+      - MAX_HISTORY_ENTRIES=${MAX_HISTORY_ENTRIES:-100}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - PRIMARY_DATABASE_URL=sqlite:///data/status_history.db
+      - TZ=${TZ:-UTC}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - statuswatch-net
+
+networks:
+  statuswatch-net:
+    driver: bridge
+
+volumes:
+  data:
